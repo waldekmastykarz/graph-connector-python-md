@@ -1,7 +1,10 @@
-from graph_service import GraphService
+from connection_configuration import external_connection
+from graph_service import graph_client
 
-class ConnectionService:
-    async def create_connection():
-        print("Creating connection...")
-        await GraphService.client.external().connections().post(ConnectionConfiguration.external_connection())
-        print("DONE")
+async def _create_connection():
+  print('Creating connection...');
+  await graph_client.external.connections.post(external_connection)
+  print('Connection created');
+
+async def create_connection():
+  await _create_connection()

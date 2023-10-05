@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#mgc login --scopes AppRoleAssignment.ReadWrite.All Application.ReadWrite.All --strategy InteractiveBrowser
+mgc login --scopes AppRoleAssignment.ReadWrite.All Application.ReadWrite.All --strategy InteractiveBrowser
 
 # create the application
 app=$(mgc applications create --body '{"displayName":"Waldek Mastykarz (blog) - connector (Python)","requiredResourceAccess":[{"resourceAccess":[{"id":"f431331c-49a6-499f-be1c-62af19c34a9d","type":"Role"},{"id":"8116ae0f-55c2-452d-9944-d18420f5b2c8","type":"Role"}],"resourceAppId":"00000003-0000-0000-c000-000000000000"}]}')
@@ -28,7 +28,7 @@ tenantId="${tenantId#\"}"
 tenantId="${tenantId%\"}"
 
 # store values
-cat << EOF > config.cfg
+cat << EOF > config.ini
 [AZURE]
 CLIENT_ID = $appId
 CLIENT_SECRET = $secret

@@ -1,38 +1,23 @@
-from configparser import SectionProxy
+import configparser
 from azure.identity import ClientSecretCredential
+from kiota_authentication_azure.azure_identity_authentication_provider import AzureIdentityAuthenticationProvider
 from msgraph import GraphServiceClient, GraphRequestAdapter
 from msgraph_core import GraphClientFactory
-from httpx import AsyncClient
 
-class GraphService:
-    _client: GraphServiceClient
-    _http_client: AsyncClient
-    
-    @staticmethod
-    @property
-    def client() -> GraphServiceClient:
-        if (GraphService._client == None):
-            config = SectionProxy
-            with open('config.ini', 'r') as f:
-                config.read_file(f)
-            
-            tenant_id = config['AZURE']['TENANT_ID']
-            client_id = config['AZURE']['CLIENT_ID']
-            client_secret = config['AZURE']['CLIENT_SECRET']
+_config = configparser.ConfigParser()
+_config.read("config.ini")
 
-            credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-            middleware = GraphClientFactory.get_default_middleware()
-            http_client = GraphClientFactory.create_with_custom_middleware(middleware)
+_tenant_id = _config["AZURE"]["TENANT_ID"]
+_client_id = _config["AZURE"]["CLIENT_ID"]
+_client_secret = _config["AZURE"]["CLIENT_SECRET"]
 
-            adapter = GraphRequestAdapter(credential, http_client)
-            
-            GraphService._client = GraphServiceClient(credential,
-                                                     scopes=['https://graph.microsoft.com/.default'],
-                                                     request_adapter=adapter)
+_credential = ClientSecretCredential(_tenant_id, _client_id, _client_secret)
+_auth_provider = AzureIdentityAuthenticationProvider(_credential)
+_middleware = GraphClientFactory.get_default_middleware(None)
+http_client = GraphClientFactory.create_with_custom_middleware(_middleware)
+_adapter = GraphRequestAdapter(_auth_provider, http_client)
 
-        return GraphService._client
-    
-    @staticmethod
-    @property
-    def http_client() -> AsyncClient:
-        return GraphService._http_client
+graph_client = GraphServiceClient(_credential,
+                                  scopes=[
+                                      "https://graph.microsoft.com/.default"],
+                                  request_adapter=_adapter)
