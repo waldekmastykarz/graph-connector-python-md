@@ -21,20 +21,19 @@ class CompleteJobWithDelayHandler(BaseMiddleware):
 
             if "/operations/" not in location:
                 # not a job URL we should follow
-                return
+                return response
           
             print(f"Waiting {self.delayMs}ms before following location {location}...")
             time.sleep(self.delayMs / 1000)
-            await self.send(request, transport)
-            return
+            return await self.send(request, transport)
 
-        if "/operations/" not in request.url:
+        if "/operations/" not in str(request.url):
             # not a job
-            return
+            return response
         
         if not response.is_success:
             print("Response is not OK")
-            return
+            return response
 
         body_bytes = response.read()
         parse_node = ParseNodeFactoryRegistry.get_root_parse_node("application/json", body_bytes)
@@ -43,4 +42,6 @@ class CompleteJobWithDelayHandler(BaseMiddleware):
         if operation.status == ConnectionOperationStatus.Inprogress:
             print(f"Waiting ${self.delayMs}ms before trying again...")
             time.sleep(self.delayMs / 1000)
-            await self.send(request, transport)
+            return await self.send(request, transport)
+        else:
+            return response

@@ -7,8 +7,10 @@ from msgraph.generated.models.external_connectors.property_ import Property_
 from msgraph.generated.models.external_connectors.property_type import PropertyType
 from msgraph.generated.models.external_connectors.label import Label
 
+user_id = "9da37739-ad63-42aa-b0c2-06f7b43e3e9e"
+
 external_connection = ExternalConnection(
-    id="waldekblogpython3",
+    id="waldekblogpython8",
     name="Waldek Mastykarz (blog); Python",
     description="Tips and best practices for building applications on Microsoft 365 by Waldek Mastykarz - Microsoft 365 Cloud Developer Advocate",
     activity_settings=ActivitySettings(

@@ -8,8 +8,8 @@
       "name": "Launch with m365proxy",
       "type": "python",
       "request": "launch",
-      "args": ["--with-proxy", "create-connection"],
-      // "args": ["create-connection"],
+      // "args": ["--with-proxy", "create-connection"],
+      "args": ["create-connection"],
       "program": "main.py",
       "console": "integratedTerminal",
       "justMyCode": true
