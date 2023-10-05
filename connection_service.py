@@ -13,4 +13,4 @@ async def _create_schema():
 
 async def create_connection():
   await _create_connection()
-  # await _create_schema()
+  await _create_schema()
