@@ -54,11 +54,14 @@ def _extract():
       yield post
 
 def _transform(content) -> Generator[ExternalItem, None, None]:
+  # needed to properly format activity date
+  local_time_with_timezone = datetime.now().astimezone()
+
   for post in content:
     # Date must be in the ISO 8601 format
     if isinstance(post.metadata["date"], str):
       post.metadata["date"] = datetime.strptime(post.metadata["date"], "%Y-%m-%d %H:%M:%S")
-
+    
     date: str = post.metadata["date"].isoformat()
     yield ExternalItem(
       id=post.metadata["slug"],
@@ -88,7 +91,7 @@ def _transform(content) -> Generator[ExternalItem, None, None]:
         ExternalActivity(
           odata_type="#microsoft.graph.externalConnectors.externalActivity",
           type=ExternalActivityType.Created,
-          start_date_time=post.metadata["date"],
+          start_date_time=post.metadata["date"].replace(tzinfo=local_time_with_timezone.tzinfo),
           performed_by=Identity(
             type=IdentityType.User,
             id=user_id

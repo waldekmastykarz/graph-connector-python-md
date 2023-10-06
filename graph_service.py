@@ -31,7 +31,7 @@ else:
     http_client = AsyncClient(timeout=timeout, http2=True)
 
 _middleware = GraphClientFactory.get_default_middleware(None)
-_middleware.append(DebugHandler())
+# _middleware.append(DebugHandler())
 _middleware.insert(0, CompleteJobWithDelayHandler(60000))
 http_client = GraphClientFactory.create_with_custom_middleware(_middleware, client=http_client)
 _adapter = GraphRequestAdapter(_auth_provider, http_client)

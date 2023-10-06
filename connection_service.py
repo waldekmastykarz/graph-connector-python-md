@@ -8,7 +8,7 @@ async def _create_connection():
 
 async def _create_schema():
   print("Creating schema...")
-  await graph_client.external.connections.by_external_connection_id(external_connection.id).schema.patch(schema)
+  await graph_client.external.connections.by_external_connection_id(external_connection.id).schema.patch(schema) # type: ignore
   print("DONE")
 
 async def create_connection():
