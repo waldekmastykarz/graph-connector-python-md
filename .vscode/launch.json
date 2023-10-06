@@ -5,11 +5,28 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch with m365proxy",
+      "name": "Create connection with m365proxy",
       "type": "python",
       "request": "launch",
-      // "args": ["--with-proxy", "create-connection"],
+      "args": ["--with-proxy", "create-connection"],
+      "program": "main.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Create connection",
+      "type": "python",
+      "request": "launch",
       "args": ["create-connection"],
+      "program": "main.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Load content",
+      "type": "python",
+      "request": "launch",
+      "args": ["load-content"],
       "program": "main.py",
       "console": "integratedTerminal",
       "justMyCode": true

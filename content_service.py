@@ -1,6 +1,10 @@
-import datetime
 import frontmatter
 import os
+import re
+from bs4 import BeautifulSoup
+from datetime import datetime
+from markdown import markdown
+from typing import Generator
 from urllib.parse import urljoin
 from msgraph.generated.models.external_connectors.access_type import AccessType
 from msgraph.generated.models.external_connectors.acl import Acl
@@ -13,10 +17,25 @@ from msgraph.generated.models.external_connectors.external_item_content_type imp
 from msgraph.generated.models.external_connectors.identity import Identity
 from msgraph.generated.models.external_connectors.identity_type import IdentityType
 from msgraph.generated.models.external_connectors.properties import Properties
-from typing import List
 
 from connection_configuration import external_connection, user_id
 from graph_service import graph_client
+
+def _markdown_to_text(markdown_string):
+    """ Converts a markdown string to plaintext """
+
+    # md -> html -> text since BeautifulSoup can extract text cleanly
+    html = markdown(markdown_string)
+
+    # remove code snippets
+    html = re.sub(r'<pre>(.*?)</pre>', ' ', html)
+    html = re.sub(r'<code>(.*?)</code >', ' ', html)
+
+    # extract text
+    soup = BeautifulSoup(html, "html.parser")
+    text = ''.join(soup.findAll(text=True))
+
+    return text
 
 def _extract():
   base_url = "https://blog.mastykarz.nl"
@@ -29,35 +48,38 @@ def _extract():
     
     with open(file_path, "r") as file:
       post = frontmatter.load(file)
-      post.url = urljoin(base_url, post["slug"])
-      post.image = urljoin(base_url, post["image"])
+      post.content = _markdown_to_text(post.content)
+      post.url = urljoin(base_url, post.metadata["slug"]) # type: ignore
+      post.image = urljoin(base_url, post.metadata["image"]) # type: ignore
       yield post
 
-def _transform(content) -> ExternalItem:
+def _transform(content) -> Generator[ExternalItem, None, None]:
   for post in content:
     # Date must be in the ISO 8601 format
-    docDate=datetime.datetime.strptime(post["date"], "%Y-%m-%d %H:%M:%S")
-    date=docDate.isoformat()
+    if isinstance(post.metadata["date"], str):
+      post.metadata["date"] = datetime.strptime(post.metadata["date"], "%Y-%m-%d %H:%M:%S")
+
+    date: str = post.metadata["date"].isoformat()
     yield ExternalItem(
-      id=post["slug"],
+      id=post.metadata["slug"],
       properties=Properties(
-        additional_data=[
-          ("title", post["title"]),
-          ("excerpt", post["excerpt"]),
-          ("imageUrl", post["image"]),
-          ("url", post["url"]),
-          ("date", date),
-          ("tags@odata.type", "Collection(String)"),
-          ("tags", post["tags"])
-        ]
+        additional_data={
+          "title": post.metadata["title"],
+          "excerpt": post.metadata["excerpt"],
+          "imageUrl": post.image,
+          "url": post.url,
+          "date": date,
+          "tags@odata.type": "Collection(String)",
+          "tags": post.metadata["tags"]
+        }
       ),
       content=ExternalItemContent(
         type=ExternalItemContentType.Text,
-        value=post["content"]
+        value=post.content
       ),
       acl=[
         Acl(
-          type=AclType.User,
+          type=AclType.Everyone,
           value="everyone",
           access_type=AccessType.Grant
         )
@@ -66,7 +88,7 @@ def _transform(content) -> ExternalItem:
         ExternalActivity(
           odata_type="#microsoft.graph.externalConnectors.externalActivity",
           type=ExternalActivityType.Created,
-          start_date_time=docDate,
+          start_date_time=post.metadata["date"],
           performed_by=Identity(
             type=IdentityType.User,
             id=user_id
@@ -75,13 +97,13 @@ def _transform(content) -> ExternalItem:
       ]
     )
 
-async def _load(content: List[ExternalItem]):
+async def _load(content: Generator[ExternalItem, None, None]):
   for doc in content:
     try:
       print(f"Loading {doc.id}...", end="")
       await graph_client.external.connections.by_external_connection_id(
-          external_connection.id
-        ).items.by_external_item_id(doc.id).put(doc)
+          external_connection.id # type: ignore
+        ).items.by_external_item_id(doc.id).put(doc) # type: ignore
       print("DONE")
     except Exception as e:
       print(f"Failed to load {doc.id}: {e}")

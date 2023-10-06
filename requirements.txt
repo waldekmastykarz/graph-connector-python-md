@@ -5,6 +5,7 @@ async-timeout==4.0.3
 attrs==23.1.0
 azure-core==1.29.4
 azure-identity==1.14.0
+beautifulsoup4==4.12.2
 certifi==2023.7.22
 cffi==1.16.0
 charset-normalizer==3.3.0
@@ -19,6 +20,7 @@ httpx==0.25.0
 hyperframe==6.0.1
 idna==3.4
 importlib-metadata==6.8.0
+Markdown==3.4.4
 microsoft-kiota-abstractions==0.8.6
 microsoft-kiota-authentication-azure==0.3.0
 microsoft-kiota-http==0.6.1
@@ -41,6 +43,7 @@ PyYAML==6.0.1
 requests==2.31.0
 six==1.16.0
 sniffio==1.3.0
+soupsieve==2.5
 std-uritemplate==0.0.42
 typing_extensions==4.8.0
 urllib3==2.0.6
